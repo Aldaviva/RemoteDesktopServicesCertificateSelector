@@ -1,0 +1,95 @@
+﻿<Window x:Class="CertificateUpdater.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:prism="http://prismlibrary.com/"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:CertificateUpdater.ViewModels"
+        xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        xmlns:certificateUpdater="clr-namespace:CertificateUpdater"
+        xmlns:data="clr-namespace:CertificateUpdater.Data"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        Title="{Binding title}"
+        Height="228"
+        Width="790"
+        WindowStartupLocation="CenterScreen"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextHintingMode="Fixed">
+
+    <Window.Resources>
+        <!-- Default sorting of grid data -->
+        <CollectionViewSource x:Key="InstalledCertificatesSorted" Source="{Binding installedCertificates}">
+            <CollectionViewSource.SortDescriptions>
+                <componentModel:SortDescription PropertyName="name" Direction="Ascending" />
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </Window.Resources>
+
+    <Grid>
+        <DataGrid Margin="10,10,10,41"
+                  AutoGenerateColumns="False" ItemsSource="{Binding Source={StaticResource InstalledCertificatesSorted}}"
+                  SelectedItem="{Binding selectedCertificate}" CanUserAddRows="False" CanUserDeleteRows="False"
+                  CanUserResizeRows="False" HeadersVisibility="Column" GridLinesVisibility="None"
+                  Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" SelectionUnit="FullRow">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <RadioButton GroupName="selectedCertificate"
+                                         IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}"
+                                         HorizontalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <!-- Default header sorting state -->
+                <DataGridTextColumn Binding="{Binding name, Mode=OneWay}" Header="Name" Width="*" SortDirection="Ascending" />
+                <DataGridTextColumn Binding="{Binding issuerName, Mode=OneWay}" Header="Issuer" Width="*" IsReadOnly="True" />
+                <DataGridTextColumn Binding="{Binding expirationDate, Mode=OneWay}" Header="Expiration date" IsReadOnly="True">
+                    <!-- Expired certificate date is red -->
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger
+                                    Binding="{Binding Item.(data:Certificate.isExpired), RelativeSource={RelativeSource AncestorType=DataGridRow}}"
+                                    Value="true">
+                                    <Setter Property="Foreground" Value="Crimson" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding thumbprint, Mode=OneWay}" Header="Thumbprint (SHA-1)" IsReadOnly="True" />
+            </DataGrid.Columns>
+            <DataGrid.CellStyle>
+                <!-- Get rid of black outline on clicked cell -->
+                <Style TargetType="DataGridCell">
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Padding" Value="3" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="DataGridCell">
+                                <Border Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}"
+                                        SnapsToDevicePixels="True">
+                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.CellStyle>
+        </DataGrid>
+
+        <Button HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Height="24" HorizontalContentAlignment="Left" Padding="5,3,5,1" Command="{Binding manageCertificatesCommand}">
+            <StackPanel Orientation="Horizontal">
+                <Image Source="../certs.png" Height="16" Margin="0,0,5,0"></Image>
+                <TextBlock Text="Certificates"></TextBlock>
+            </StackPanel>
+        </Button>
+
+        <Button Content="Apply" Margin="0,0,10,10" Command="{Binding saveCommand}" VerticalAlignment="Bottom"
+                HorizontalAlignment="Right" Width="75" Height="24" Padding="1,0,1,1" />
+    </Grid>
+</Window>
