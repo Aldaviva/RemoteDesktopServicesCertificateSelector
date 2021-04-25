@@ -1,49 +1,54 @@
 ﻿#nullable enable
 
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
-using CertificateUpdater.Data;
-using CertificateUpdater.Managers;
 using Microsoft.Management.Infrastructure;
 using Prism.Commands;
 using Prism.Mvvm;
+using RemoteDesktopServicesCertificateSelector.Data;
+using RemoteDesktopServicesCertificateSelector.Managers;
 
-namespace CertificateUpdater.ViewModels {
+namespace RemoteDesktopServicesCertificateSelector.ViewModels {
 
     public class MainWindowViewModel: BindableBase {
 
         private readonly CertificateManager certificateManager;
 
-        public MainWindowViewModel(CertificateManager certificateManager) {
-            this.certificateManager = certificateManager;
-            installedCertificates.AddRange(certificateManager.installedCertificates);
-            selectedCertificate = certificateManager.activeTerminalServicesCertificate;
-
-            saveCommand               = new DelegateCommand(save);
-            manageCertificatesCommand = new DelegateCommand(manageCertificates);
-        }
-
-        public string title { get; } = "Remote Desktop Connection Certificate";
-
-        public ObservableCollection<Certificate> installedCertificates { get; } = new();
-
-        private Certificate? _selectedCertificate;
-
-        public Certificate? selectedCertificate {
-            get => _selectedCertificate;
-            set => SetProperty(ref _selectedCertificate, value);
-        }
+        public CertificateViewModel? activeCertificateViewModel => installedCertificates.FirstOrDefault(certificate => certificate.isActive);
 
         public DelegateCommand manageCertificatesCommand { get; }
+        public DelegateCommand saveCommand { get; }
+
+        public string title { get; } = "Remote Desktop Services Certificate";
+
+        public ObservableCollection<CertificateViewModel> installedCertificates { get; } = new();
+
+        public MainWindowViewModel(CertificateManager certificateManager) {
+            this.certificateManager = certificateManager;
+
+            Certificate activeCertificate = certificateManager.activeTerminalServicesCertificate;
+            installedCertificates.AddRange(certificateManager.installedCertificates
+                .Select(certificate => new CertificateViewModel(certificate) { isActive = certificate == activeCertificate }));
+
+            manageCertificatesCommand = new DelegateCommand(manageCertificates);
+            saveCommand               = new DelegateCommand(save);
+        }
+
+        public void setActive(CertificateViewModel selectedItem) {
+            if (activeCertificateViewModel is not null) {
+                activeCertificateViewModel.isActive = false;
+            }
+
+            selectedItem.isActive = true;
+        }
 
         private void manageCertificates() {
             certificateManager.launchCertificateManagementConsole();
         }
 
-        public DelegateCommand saveCommand { get; }
-
         private void save() {
-            if (selectedCertificate != null) {
+            if (activeCertificateViewModel?.certificate is { } selectedCertificate) {
                 try {
                     certificateManager.activeTerminalServicesCertificate = selectedCertificate;
                     MessageBox.Show($"Remote Desktop Connection is now using the \"{selectedCertificate.name}\" certificate.",

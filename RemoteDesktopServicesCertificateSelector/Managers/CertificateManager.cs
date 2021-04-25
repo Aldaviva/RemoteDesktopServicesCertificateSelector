@@ -8,11 +8,11 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using CertificateUpdater.Data;
-using CertificateUpdater.Resources;
 using Microsoft.Management.Infrastructure;
+using RemoteDesktopServicesCertificateSelector.Data;
+using RemoteDesktopServicesCertificateSelector.Properties;
 
-namespace CertificateUpdater.Managers {
+namespace RemoteDesktopServicesCertificateSelector.Managers {
 
     public interface CertificateManager {
 
@@ -33,9 +33,16 @@ namespace CertificateUpdater.Managers {
 
         private readonly CimSession cimSession = CimSession.Create(null);
 
+        private string? mostRecentMscFilename;
+
         public void Dispose() {
-            cimSession?.Close();
-            cimSession?.Dispose();
+            if (mostRecentMscFilename is not null) {
+                File.Delete(mostRecentMscFilename);
+                mostRecentMscFilename = null;
+            }
+
+            cimSession.Close();
+            cimSession.Dispose();
         }
 
         public IEnumerable<Certificate> installedCertificates => new[] {
@@ -46,8 +53,8 @@ namespace CertificateUpdater.Managers {
             IEnumerable<Certificate> certificates = store.Certificates
                 .Find(X509FindType.FindByApplicationPolicy, Oid.FromFriendlyName("Server Authentication", OidGroup.EnhancedKeyUsage).Value, false)
                 .Cast<X509Certificate2>()
-                .Select(cert => new Certificate(cert.Thumbprint, string.IsNullOrWhiteSpace(cert.FriendlyName) ? cert.GetNameInfo(X509NameType.SimpleName, false) : cert.FriendlyName,
-                    cert.GetNameInfo(X509NameType.SimpleName, true), cert.NotAfter, store.Name == REMOTE_DESKTOP_STORE));
+                .Select(cert => new Certificate(cert.Thumbprint!, string.IsNullOrWhiteSpace(cert.FriendlyName) ? cert.GetNameInfo(X509NameType.SimpleName, false)! : cert.FriendlyName,
+                    cert.GetNameInfo(X509NameType.SimpleName, true)!, cert.NotAfter, store.Name == REMOTE_DESKTOP_STORE));
             store.Close();
             return certificates;
         });
@@ -69,14 +76,18 @@ namespace CertificateUpdater.Managers {
         }
 
         public async Task launchCertificateManagementConsole() {
-            string mscFilename = Path.GetTempFileName();
-            File.WriteAllBytes(mscFilename, Resource1.CertificatesMsc);
+            if (mostRecentMscFilename != null) {
+                File.Delete(mostRecentMscFilename);
+            }
 
-            var startInfo = new ProcessStartInfo("mmc.exe", mscFilename);
-            Process.Start(startInfo);
+            mostRecentMscFilename = Path.GetTempFileName();
+            File.WriteAllBytes(mostRecentMscFilename, Resources.CertificatesMsc);
+
+            Process.Start("mmc.exe", mostRecentMscFilename);
 
             await Task.Delay(5000);
-            File.Delete(mscFilename);
+            File.Delete(mostRecentMscFilename);
+            mostRecentMscFilename = null;
         }
 
     }

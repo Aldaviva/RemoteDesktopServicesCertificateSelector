@@ -1,24 +1,22 @@
 ﻿#nullable enable
 
 using System;
-using System.Windows;
-using Prism.Commands;
 
-namespace CertificateUpdater.Data {
+namespace RemoteDesktopServicesCertificateSelector.Data {
 
     public class Certificate {
 
         public string? name { get; }
         public string? issuerName { get; }
+
         public DateTime expirationDate { get; }
-        public bool isExpired => expirationDate <= DateTime.Now;
+
+        // public bool isExpired => expirationDate <= DateTime.Now;
         public string thumbprint { get; }
         public bool isDefaultSelfSigned { get; }
-        public DelegateCommand copyThumbprintCommand { get; }
 
         public Certificate(string thumbprint) {
-            this.thumbprint       = thumbprint;
-            copyThumbprintCommand = new DelegateCommand(copyThumbprint);
+            this.thumbprint = thumbprint;
         }
 
         public Certificate(string thumbprint, string name, string issuerName, DateTime expirationDate, bool isDefaultSelfSigned): this(thumbprint) {
@@ -26,10 +24,6 @@ namespace CertificateUpdater.Data {
             this.issuerName          = issuerName;
             this.expirationDate      = expirationDate;
             this.isDefaultSelfSigned = isDefaultSelfSigned;
-        }
-
-        private void copyThumbprint() {
-            Clipboard.SetText(thumbprint);
         }
 
         protected bool Equals(Certificate other) {

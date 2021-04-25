@@ -1,12 +1,12 @@
-﻿<Window x:Class="CertificateUpdater.Views.MainWindow"
+﻿<Window x:Class="RemoteDesktopServicesCertificateSelector.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:viewModels="clr-namespace:CertificateUpdater.ViewModels"
         xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-        xmlns:data="clr-namespace:CertificateUpdater.Data"
+        xmlns:viewModels="clr-namespace:RemoteDesktopServicesCertificateSelector.ViewModels"
+        xmlns:views="clr-namespace:RemoteDesktopServicesCertificateSelector.Views"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
         prism:ViewModelLocator.AutoWireViewModel="True"
@@ -15,35 +15,38 @@
         Width="790"
         WindowStartupLocation="CenterScreen"
         TextOptions.TextFormattingMode="Display"
-        TextOptions.TextHintingMode="Fixed">
+        TextOptions.TextHintingMode="Fixed" Loaded="onWindowLoaded">
 
     <Window.Resources>
         <!-- Default sorting of grid data -->
-        <CollectionViewSource x:Key="InstalledCertificatesSorted" Source="{Binding installedCertificates}">
+        <CollectionViewSource x:Key="installedCertificatesSorted" Source="{Binding installedCertificates}">
             <CollectionViewSource.SortDescriptions>
                 <componentModel:SortDescription PropertyName="name" Direction="Ascending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
-        <!--<DataTemplate x:Key="RadioCell">
-            <RadioButton GroupName="selectedCertificate"
-                         IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListViewItem}}" />
-        </DataTemplate>-->
     </Window.Resources>
 
     <Grid>
-        <DataGrid Margin="10,10,10,41"
-                  AutoGenerateColumns="False" ItemsSource="{Binding Source={StaticResource InstalledCertificatesSorted}}"
-
+        <!-- SelectedItem doesn't work properly on Window load, you either have to set it manually or not use the DataGrid's DataContext directly -->
+        <DataGrid Name="dataGrid" Margin="10,10,10,41"
+                  AutoGenerateColumns="False" KeyUp="onDataGridKeyUp"
+                  ItemsSource="{Binding Source={StaticResource installedCertificatesSorted}}"
                   CanUserAddRows="False" CanUserDeleteRows="False"
                   CanUserResizeRows="False" HeadersVisibility="Column" GridLinesVisibility="None"
                   Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" SelectionUnit="FullRow"
-                  BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
+                  BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                  SelectedItem="{Binding DataContext.activeCertificateViewModel, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=FrameworkElement}, Mode=OneTime}">
 
             <DataGrid.Resources>
                 <!-- Copy command on row model: https://blog.gisspan.com/2012/11/contextmenu-for-wpf-datagrid-on-row.html -->
                 <ContextMenu x:Key="rowMenu" DataContext="{Binding RelativeSource={RelativeSource Self}, Path=PlacementTarget.(FrameworkElement.DataContext)}"
-                             d:DataContext="{d:DesignInstance data:Certificate, IsDesignTimeCreatable=false}">
-                    <MenuItem Header="Copy thumbprint" Command="{Binding copyThumbprintCommand}" />
+                             d:DataContext="{d:DesignInstance viewModels:CertificateViewModel, IsDesignTimeCreatable=false}">
+                    <MenuItem Header="Copy thumbprint (SHA-1)" Command="{Binding copyThumbprintCommand}">
+                        <MenuItem.Icon>
+                            <!-- Icon file must only have a 16x16 image inside, or else WPF will resample a larger one -->
+                            <Image Source="/CertificateUpdater;component/Resources/copy.ico" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </ContextMenu>
             </DataGrid.Resources>
 
@@ -52,27 +55,26 @@
                     <Setter Property="ContextMenu" Value="{StaticResource rowMenu}" />
                 </Style>
             </DataGrid.RowStyle>
+
             <DataGrid.Columns>
                 <DataGridTemplateColumn Width="22" CanUserResize="False">
                     <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <RadioButton GroupName="selectedCertificate"
-                                         IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}"
-                                         HorizontalAlignment="Right" />
+                        <!-- DataType must be set or else the binding will have a DataContext of the grid's view model, not the row's -->
+                        <DataTemplate DataType="viewModels:CertificateViewModel">
+                            <RadioButton GroupName="selectedCertificate" IsThreeState="True" IsChecked="{Binding isActive}" HorizontalAlignment="Right" Focusable="False" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <!-- Default header sorting state -->
-                <DataGridTextColumn Binding="{Binding name, Mode=OneWay}" Header="Certificate Name" Width="*" SortDirection="Ascending" />
+                <DataGridTextColumn Binding="{Binding name, Mode=OneWay}" Header="Certificate name" Width="*" SortDirection="Ascending" />
                 <DataGridTextColumn Binding="{Binding issuerName, Mode=OneWay}" Header="Issuer" Width="*" IsReadOnly="True" />
                 <DataGridTextColumn Binding="{Binding expirationDate, Mode=OneWay}" Header="Expiration date" IsReadOnly="True">
                     <!-- Expired certificate date is red -->
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Style.Triggers>
-                                <DataTrigger
-                                    Binding="{Binding Item.(data:Certificate.isExpired), RelativeSource={RelativeSource AncestorType=DataGridRow}}"
-                                    Value="true">
+                                <!-- Mode must be OneTime or else you get Key Cannot Be Null crashes -->
+                                <DataTrigger Binding="{Binding Item.(viewModels:CertificateViewModel.isExpired), RelativeSource={RelativeSource AncestorType=DataGridRow}, Mode=OneTime}" Value="true">
                                     <Setter Property="Foreground" Value="Crimson" />
                                 </DataTrigger>
                             </Style.Triggers>
@@ -90,9 +92,8 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="DataGridCell">
-                                <Border Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}"
-                                        SnapsToDevicePixels="True">
+                                <Border Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                        Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
                                     <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                                 </Border>
                             </ControlTemplate>
@@ -102,15 +103,9 @@
             </DataGrid.CellStyle>
         </DataGrid>
 
-        <Button HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Height="24" HorizontalContentAlignment="Left"
-                Padding="5,3,5,1" Command="{Binding manageCertificatesCommand}">
-            <StackPanel Orientation="Horizontal">
-                <Image Source="../certs.png" Height="16" Margin="0,0,5,0" />
-                <TextBlock Text="Certificates" />
-            </StackPanel>
-        </Button>
+        <views:IconButton HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Text="Manage Local Computer Certificates" Icon="../Resources/certs.png"
+                          Command="{Binding manageCertificatesCommand}" />
 
-        <Button Content="Apply" Margin="0,0,10,10" Command="{Binding saveCommand}" VerticalAlignment="Bottom"
-                HorizontalAlignment="Right" Width="75" Height="24" Padding="1,0,1,1" />
+        <views:IconButton Margin="0,0,10,10" Command="{Binding saveCommand}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Text="Apply" Icon="../Resources/save.ico" />
     </Grid>
 </Window>
