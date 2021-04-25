@@ -44,7 +44,7 @@
                     <MenuItem Header="Copy thumbprint (SHA-1)" Command="{Binding copyThumbprintCommand}">
                         <MenuItem.Icon>
                             <!-- Icon file must only have a 16x16 image inside, or else WPF will resample a larger one -->
-                            <Image Source="/CertificateUpdater;component/Resources/copy.ico" />
+                            <Image Source="../Resources/copy.ico" />
                         </MenuItem.Icon>
                     </MenuItem>
                 </ContextMenu>
