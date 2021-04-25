@@ -1,13 +1,9 @@
 ﻿#nullable enable
 
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
 using System.Windows;
 using CertificateUpdater.Data;
 using CertificateUpdater.Managers;
-using CertificateUpdater.Resources;
 using Microsoft.Management.Infrastructure;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -23,13 +19,13 @@ namespace CertificateUpdater.ViewModels {
             installedCertificates.AddRange(certificateManager.installedCertificates);
             selectedCertificate = certificateManager.activeTerminalServicesCertificate;
 
-            saveCommand = new DelegateCommand(save);
+            saveCommand               = new DelegateCommand(save);
             manageCertificatesCommand = new DelegateCommand(manageCertificates);
         }
 
         public string title { get; } = "Remote Desktop Connection Certificate";
 
-        public ObservableCollection<Certificate> installedCertificates { get; } = new ObservableCollection<Certificate>();
+        public ObservableCollection<Certificate> installedCertificates { get; } = new();
 
         private Certificate? _selectedCertificate;
 

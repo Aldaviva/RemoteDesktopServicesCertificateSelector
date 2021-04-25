@@ -6,7 +6,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:CertificateUpdater.ViewModels"
         xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-        xmlns:certificateUpdater="clr-namespace:CertificateUpdater"
         xmlns:data="clr-namespace:CertificateUpdater.Data"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
@@ -25,26 +24,46 @@
                 <componentModel:SortDescription PropertyName="name" Direction="Ascending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
+        <!--<DataTemplate x:Key="RadioCell">
+            <RadioButton GroupName="selectedCertificate"
+                         IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListViewItem}}" />
+        </DataTemplate>-->
     </Window.Resources>
 
     <Grid>
         <DataGrid Margin="10,10,10,41"
                   AutoGenerateColumns="False" ItemsSource="{Binding Source={StaticResource InstalledCertificatesSorted}}"
-                  SelectedItem="{Binding selectedCertificate}" CanUserAddRows="False" CanUserDeleteRows="False"
+
+                  CanUserAddRows="False" CanUserDeleteRows="False"
                   CanUserResizeRows="False" HeadersVisibility="Column" GridLinesVisibility="None"
-                  Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" SelectionUnit="FullRow">
+                  Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" SelectionUnit="FullRow"
+                  BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
+
+            <DataGrid.Resources>
+                <!-- Copy command on row model: https://blog.gisspan.com/2012/11/contextmenu-for-wpf-datagrid-on-row.html -->
+                <ContextMenu x:Key="rowMenu" DataContext="{Binding RelativeSource={RelativeSource Self}, Path=PlacementTarget.(FrameworkElement.DataContext)}"
+                             d:DataContext="{d:DesignInstance data:Certificate, IsDesignTimeCreatable=false}">
+                    <MenuItem Header="Copy thumbprint" Command="{Binding copyThumbprintCommand}" />
+                </ContextMenu>
+            </DataGrid.Resources>
+
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="ContextMenu" Value="{StaticResource rowMenu}" />
+                </Style>
+            </DataGrid.RowStyle>
             <DataGrid.Columns>
-                <DataGridTemplateColumn>
+                <DataGridTemplateColumn Width="22" CanUserResize="False">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <RadioButton GroupName="selectedCertificate"
                                          IsChecked="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}"
-                                         HorizontalAlignment="Center" />
+                                         HorizontalAlignment="Right" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <!-- Default header sorting state -->
-                <DataGridTextColumn Binding="{Binding name, Mode=OneWay}" Header="Name" Width="*" SortDirection="Ascending" />
+                <DataGridTextColumn Binding="{Binding name, Mode=OneWay}" Header="Certificate Name" Width="*" SortDirection="Ascending" />
                 <DataGridTextColumn Binding="{Binding issuerName, Mode=OneWay}" Header="Issuer" Width="*" IsReadOnly="True" />
                 <DataGridTextColumn Binding="{Binding expirationDate, Mode=OneWay}" Header="Expiration date" IsReadOnly="True">
                     <!-- Expired certificate date is red -->
@@ -62,6 +81,7 @@
                 </DataGridTextColumn>
                 <DataGridTextColumn Binding="{Binding thumbprint, Mode=OneWay}" Header="Thumbprint (SHA-1)" IsReadOnly="True" />
             </DataGrid.Columns>
+
             <DataGrid.CellStyle>
                 <!-- Get rid of black outline on clicked cell -->
                 <Style TargetType="DataGridCell">
@@ -82,10 +102,11 @@
             </DataGrid.CellStyle>
         </DataGrid>
 
-        <Button HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Height="24" HorizontalContentAlignment="Left" Padding="5,3,5,1" Command="{Binding manageCertificatesCommand}">
+        <Button HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Height="24" HorizontalContentAlignment="Left"
+                Padding="5,3,5,1" Command="{Binding manageCertificatesCommand}">
             <StackPanel Orientation="Horizontal">
-                <Image Source="../certs.png" Height="16" Margin="0,0,5,0"></Image>
-                <TextBlock Text="Certificates"></TextBlock>
+                <Image Source="../certs.png" Height="16" Margin="0,0,5,0" />
+                <TextBlock Text="Certificates" />
             </StackPanel>
         </Button>
 

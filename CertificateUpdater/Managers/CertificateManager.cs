@@ -26,9 +26,9 @@ namespace CertificateUpdater.Managers {
 
     public class CertificateManagerImpl: CertificateManager, IDisposable {
 
-        private const string TERMINALSERVICES_NAMESPACE = @"root/cimv2/terminalservices";
-        private const string SSL_CERTIFICATE_SHA1_HASH = "SSLCertificateSHA1Hash";
-        private const string REMOTE_DESKTOP_STORE = "Remote Desktop";
+        private const string TERMINALSERVICES_NAMESPACE   = @"root/cimv2/terminalservices";
+        private const string SSL_CERTIFICATE_SHA1_HASH    = "SSLCertificateSHA1Hash";
+        private const string REMOTE_DESKTOP_STORE         = "Remote Desktop";
         private const string USE_DEFAULT_SELF_SIGNED_CERT = "0000000000000000000000000000000000000000";
 
         private readonly CimSession cimSession = CimSession.Create(null);
@@ -44,33 +44,26 @@ namespace CertificateUpdater.Managers {
         }.SelectMany(store => {
             store.Open(OpenFlags.ReadOnly);
             IEnumerable<Certificate> certificates = store.Certificates
-                .Find(X509FindType.FindByApplicationPolicy,
-                    Oid.FromFriendlyName("Server Authentication", OidGroup.EnhancedKeyUsage).Value, false)
+                .Find(X509FindType.FindByApplicationPolicy, Oid.FromFriendlyName("Server Authentication", OidGroup.EnhancedKeyUsage).Value, false)
                 .Cast<X509Certificate2>()
-                .Select(cert => new Certificate(cert.Thumbprint, string.IsNullOrWhiteSpace(cert.FriendlyName)
-                        ? cert.GetNameInfo(X509NameType.SimpleName, false)
-                        : cert.FriendlyName,
+                .Select(cert => new Certificate(cert.Thumbprint, string.IsNullOrWhiteSpace(cert.FriendlyName) ? cert.GetNameInfo(X509NameType.SimpleName, false) : cert.FriendlyName,
                     cert.GetNameInfo(X509NameType.SimpleName, true), cert.NotAfter, store.Name == REMOTE_DESKTOP_STORE));
             store.Close();
             return certificates;
         });
 
         private CimInstance getRdpTcpGeneralSetting() {
-            return cimSession.QueryInstances(TERMINALSERVICES_NAMESPACE, "WQL",
-                $"select {SSL_CERTIFICATE_SHA1_HASH} from Win32_TSGeneralSetting where TerminalName='RDP-tcp'").First();
+            return cimSession.QueryInstances(TERMINALSERVICES_NAMESPACE, "WQL", $"select {SSL_CERTIFICATE_SHA1_HASH} from Win32_TSGeneralSetting where TerminalName='RDP-tcp'").First();
         }
 
         public Certificate activeTerminalServicesCertificate {
             get {
-                CimInstance rdpTcpGeneralSetting = getRdpTcpGeneralSetting();
-                string activeThumbprint = (string) rdpTcpGeneralSetting.CimInstanceProperties[SSL_CERTIFICATE_SHA1_HASH].Value;
-                return installedCertificates.FirstOrDefault(installedCert => installedCert.thumbprint == activeThumbprint) ??
-                       new Certificate(activeThumbprint);
+                string activeThumbprint = (string) getRdpTcpGeneralSetting().CimInstanceProperties[SSL_CERTIFICATE_SHA1_HASH].Value;
+                return installedCertificates.FirstOrDefault(installedCert => installedCert.thumbprint == activeThumbprint) ?? new Certificate(activeThumbprint);
             }
             set {
                 CimInstance rdpTcpGeneralSetting = getRdpTcpGeneralSetting();
-                rdpTcpGeneralSetting.CimInstanceProperties[SSL_CERTIFICATE_SHA1_HASH].Value =
-                    value.isDefaultSelfSigned ? USE_DEFAULT_SELF_SIGNED_CERT : value.thumbprint;
+                rdpTcpGeneralSetting.CimInstanceProperties[SSL_CERTIFICATE_SHA1_HASH].Value = value.isDefaultSelfSigned ? USE_DEFAULT_SELF_SIGNED_CERT : value.thumbprint;
                 cimSession.ModifyInstance(rdpTcpGeneralSetting);
             }
         }
