@@ -20,7 +20,7 @@ namespace RemoteDesktopServicesCertificateSelector.ViewModels {
         public DelegateCommand manageCertificatesCommand { get; }
         public DelegateCommand saveCommand { get; }
 
-        public string title { get; } = "Remote Desktop Services Certificate";
+        public string title { get; } = "Remote Desktop Services Certificate Selector";
 
         public ObservableCollection<CertificateViewModel> installedCertificates { get; } = new();
 
