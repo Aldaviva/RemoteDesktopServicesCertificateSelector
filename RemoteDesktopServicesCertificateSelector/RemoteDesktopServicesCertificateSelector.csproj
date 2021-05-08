@@ -54,6 +54,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -85,6 +86,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Data\Certificate.cs" />
+    <Compile Include="Views\Converters\EnabledToOpacityConverter.cs" />
     <Compile Include="Managers\CertificateManager.cs" />
     <Compile Include="ViewModels\CertificateViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
@@ -108,6 +110,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="ILRepack.targets" />
     <None Include="Properties\app.manifest" />
@@ -126,13 +129,18 @@
     <Resource Include="Resources\terminalServicesManagement.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\certs.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\copy.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\save.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\cert.ico" />
+    <Resource Include="Resources\certs.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\refresh.png" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

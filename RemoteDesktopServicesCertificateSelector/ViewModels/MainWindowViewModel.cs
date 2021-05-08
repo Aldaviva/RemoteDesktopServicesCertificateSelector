@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using Microsoft.Management.Infrastructure;
@@ -19,6 +20,7 @@ namespace RemoteDesktopServicesCertificateSelector.ViewModels {
 
         public DelegateCommand manageCertificatesCommand { get; }
         public DelegateCommand saveCommand { get; }
+        public DelegateCommand refreshCommand { get; }
 
         public string title { get; } = "Remote Desktop Services Certificate Selector";
 
@@ -27,17 +29,17 @@ namespace RemoteDesktopServicesCertificateSelector.ViewModels {
         public MainWindowViewModel(CertificateManager certificateManager) {
             this.certificateManager = certificateManager;
 
-            Certificate activeCertificate = certificateManager.activeTerminalServicesCertificate;
-            installedCertificates.AddRange(certificateManager.installedCertificates
-                .Select(certificate => new CertificateViewModel(certificate) { isActive = certificate == activeCertificate }));
-
             manageCertificatesCommand = new DelegateCommand(manageCertificates);
-            saveCommand               = new DelegateCommand(save);
+            saveCommand               = new DelegateCommand(save, isDirty);
+            refreshCommand            = new DelegateCommand(refresh);
+
+            refresh();
         }
 
         public void setActive(CertificateViewModel selectedItem) {
-            if (activeCertificateViewModel is not null) {
-                activeCertificateViewModel.isActive = false;
+            CertificateViewModel? oldActiveCertificate = activeCertificateViewModel;
+            if (oldActiveCertificate is not null) {
+                oldActiveCertificate.isActive = false;
             }
 
             selectedItem.isActive = true;
@@ -51,13 +53,42 @@ namespace RemoteDesktopServicesCertificateSelector.ViewModels {
             if (activeCertificateViewModel?.certificate is { } selectedCertificate) {
                 try {
                     certificateManager.activeTerminalServicesCertificate = selectedCertificate;
-                    MessageBox.Show($"Remote Desktop Connection is now using the \"{selectedCertificate.name}\" certificate.",
+                    saveCommand.RaiseCanExecuteChanged();
+                    MessageBox.Show($"Remote Desktop Services are now using the \"{selectedCertificate.name}\" certificate, which expires on {selectedCertificate.expirationDate:d}.",
                         "Connection updated", MessageBoxButton.OK, MessageBoxImage.Information);
                 } catch (CimException e) {
                     MessageBox.Show(e.Message, "Failed to change certificate", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             } else {
                 MessageBox.Show("No certificate selected", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private bool isDirty() {
+            return !certificateManager.activeTerminalServicesCertificate.Equals(activeCertificateViewModel?.certificate);
+        }
+
+        private void refresh() {
+            Certificate activeCertificate = certificateManager.activeTerminalServicesCertificate;
+
+            foreach (CertificateViewModel installedCertificate in installedCertificates) {
+                installedCertificate.PropertyChanged -= onCertificateViewModelChanged;
+            }
+
+            installedCertificates.Clear();
+            installedCertificates.AddRange(certificateManager.installedCertificates
+                .Select(certificate => {
+                    var certificateViewModel = new CertificateViewModel(certificate, certificateManager) { isActive = certificate == activeCertificate };
+                    certificateViewModel.PropertyChanged += onCertificateViewModelChanged;
+                    return certificateViewModel;
+                }));
+
+            saveCommand.RaiseCanExecuteChanged();
+        }
+
+        private void onCertificateViewModelChanged(object sender, PropertyChangedEventArgs args) {
+            if (args.PropertyName == nameof(CertificateViewModel.isActive)) {
+                saveCommand.RaiseCanExecuteChanged();
             }
         }
 

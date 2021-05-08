@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
@@ -11,7 +10,7 @@ namespace RemoteDesktopServicesCertificateSelector.Views {
 
     [ContentProperty(nameof(Text))]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public partial class IconButton: UserControl {
+    public partial class IconButton {
 
         public static readonly DependencyProperty TextProperty    = DependencyProperty.Register(nameof(Text), typeof(string), typeof(IconButton));
         public static readonly DependencyProperty IconProperty    = DependencyProperty.Register(nameof(Icon), typeof(ImageSource), typeof(IconButton));

@@ -4,12 +4,15 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using Prism.Commands;
 using RemoteDesktopServicesCertificateSelector.Data;
+using RemoteDesktopServicesCertificateSelector.Managers;
 
 #nullable enable
 
 namespace RemoteDesktopServicesCertificateSelector.ViewModels {
 
     public class CertificateViewModel: INotifyPropertyChanged {
+
+        private readonly CertificateManager certificateManager;
 
         public Certificate certificate { get; }
 
@@ -32,9 +35,17 @@ namespace RemoteDesktopServicesCertificateSelector.ViewModels {
 
         public DelegateCommand copyThumbprintCommand { get; }
 
-        public CertificateViewModel(Certificate certificate) {
-            this.certificate      = certificate;
-            copyThumbprintCommand = new DelegateCommand(copyThumbprint);
+        public DelegateCommand openCertificateCommand { get; }
+
+        public CertificateViewModel(Certificate certificate, CertificateManager certificateManager) {
+            this.certificateManager = certificateManager;
+            this.certificate        = certificate;
+            copyThumbprintCommand   = new DelegateCommand(copyThumbprint);
+            openCertificateCommand  = new DelegateCommand(openCertificate);
+        }
+
+        private void openCertificate() {
+            certificateManager.openCertificate(certificate);
         }
 
         private void copyThumbprint() {

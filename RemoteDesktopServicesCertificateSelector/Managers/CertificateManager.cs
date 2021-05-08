@@ -22,6 +22,8 @@ namespace RemoteDesktopServicesCertificateSelector.Managers {
 
         Task launchCertificateManagementConsole();
 
+        void openCertificate(Certificate certificate);
+
     }
 
     public class CertificateManagerImpl: CertificateManager, IDisposable {
@@ -53,8 +55,7 @@ namespace RemoteDesktopServicesCertificateSelector.Managers {
             IEnumerable<Certificate> certificates = store.Certificates
                 .Find(X509FindType.FindByApplicationPolicy, Oid.FromFriendlyName("Server Authentication", OidGroup.EnhancedKeyUsage).Value, false)
                 .Cast<X509Certificate2>()
-                .Select(cert => new Certificate(cert.Thumbprint!, string.IsNullOrWhiteSpace(cert.FriendlyName) ? cert.GetNameInfo(X509NameType.SimpleName, false)! : cert.FriendlyName,
-                    cert.GetNameInfo(X509NameType.SimpleName, true)!, cert.NotAfter, store.Name == REMOTE_DESKTOP_STORE));
+                .Select(cert => new Certificate(cert, store.Name == REMOTE_DESKTOP_STORE));
             store.Close();
             return certificates;
         });
@@ -88,6 +89,12 @@ namespace RemoteDesktopServicesCertificateSelector.Managers {
             await Task.Delay(5000);
             File.Delete(mostRecentMscFilename);
             mostRecentMscFilename = null;
+        }
+
+        public void openCertificate(Certificate certificate) {
+            if (certificate.windowsCertificate is not null) {
+                X509Certificate2UI.DisplayCertificate(certificate.windowsCertificate);
+            }
         }
 
     }

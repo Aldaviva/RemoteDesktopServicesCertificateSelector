@@ -41,6 +41,11 @@
                 <!-- Copy command on row model: https://blog.gisspan.com/2012/11/contextmenu-for-wpf-datagrid-on-row.html -->
                 <ContextMenu x:Key="rowMenu" DataContext="{Binding RelativeSource={RelativeSource Self}, Path=PlacementTarget.(FrameworkElement.DataContext)}"
                              d:DataContext="{d:DesignInstance viewModels:CertificateViewModel, IsDesignTimeCreatable=false}">
+                    <MenuItem Header="Open" Command="{Binding openCertificateCommand}">
+                        <MenuItem.Icon>
+                            <Image Source="../Resources/cert.ico" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <MenuItem Header="Copy thumbprint (SHA-1)" Command="{Binding copyThumbprintCommand}">
                         <MenuItem.Icon>
                             <!-- Icon file must only have a 16x16 image inside, or else WPF will resample a larger one -->
@@ -61,7 +66,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <!-- DataType must be set or else the binding will have a DataContext of the grid's view model, not the row's -->
                         <DataTemplate DataType="viewModels:CertificateViewModel">
-                            <RadioButton GroupName="selectedCertificate" IsThreeState="True" IsChecked="{Binding isActive}" HorizontalAlignment="Right" Focusable="False" />
+                            <RadioButton GroupName="selectedCertificate" IsThreeState="True" IsChecked="{Binding isActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Right" Focusable="False" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -103,9 +108,13 @@
             </DataGrid.CellStyle>
         </DataGrid>
 
-        <views:IconButton HorizontalAlignment="Left" Margin="10,0,0,10" VerticalAlignment="Bottom" Text="Manage Local Computer Certificates" Icon="../Resources/certs.png"
-                          Command="{Binding manageCertificatesCommand}" />
+        <DockPanel Margin="10,0,10,10" Height="24" VerticalAlignment="Bottom">
+            <views:IconButton Command="{Binding refreshCommand}" Text="Refresh" Icon="../Resources/refresh.png" DockPanel.Dock="Left" HorizontalAlignment="Left" Margin="0,0,7,0" />
 
-        <views:IconButton Margin="0,0,10,10" Command="{Binding saveCommand}" VerticalAlignment="Bottom" HorizontalAlignment="Right" Text="Apply" Icon="../Resources/save.ico" />
+            <views:IconButton Command="{Binding manageCertificatesCommand}" Text="Manage Local Computer Certificates" Icon="../Resources/certs.ico" DockPanel.Dock="Left" HorizontalAlignment="Left" />
+            
+            <views:IconButton Command="{Binding saveCommand}" Text="Apply" Icon="../Resources/save.ico" DockPanel.Dock="Right" HorizontalAlignment="Right" />
+        </DockPanel>
+        
     </Grid>
 </Window>
