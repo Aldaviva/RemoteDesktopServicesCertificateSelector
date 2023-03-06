@@ -3,13 +3,11 @@
                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                         xmlns:prism="http://prismlibrary.com/">
 
-    <Application.Resources>
+    <prism:PrismApplication.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries >
-                <!-- Force Aero in Windows 7 for custom UXTheme compatibility. Disabled for Windows 8 and later in App.CreateShell(). -->
-                <ResourceDictionary Source="/PresentationFramework.Aero;component/themes/Aero.NormalColor.xaml" />
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Views/Skins/Skin.Dark.xaml"></ResourceDictionary> <!-- TODO: remove this -->
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </Application.Resources>
-
+    </prism:PrismApplication.Resources>
 </prism:PrismApplication>

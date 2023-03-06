@@ -1,5 +1,6 @@
 ﻿#nullable enable
 
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -10,88 +11,100 @@ using Prism.Mvvm;
 using RemoteDesktopServicesCertificateSelector.Data;
 using RemoteDesktopServicesCertificateSelector.Managers;
 
-namespace RemoteDesktopServicesCertificateSelector.ViewModels {
+namespace RemoteDesktopServicesCertificateSelector.ViewModels;
 
-    public class MainWindowViewModel: BindableBase {
+public interface IMainWindowViewModel: INotifyPropertyChanged {
 
-        private readonly CertificateManager certificateManager;
+    CertificateViewModel? activeCertificateViewModel { get; }
+    DelegateCommand manageCertificatesCommand { get; }
+    DelegateCommand saveCommand { get; }
+    DelegateCommand refreshCommand { get; }
+    string title { get; }
+    ObservableCollection<CertificateViewModel> installedCertificates { get; }
 
-        public CertificateViewModel? activeCertificateViewModel => installedCertificates.FirstOrDefault(certificate => certificate.isActive);
+    void setActive(CertificateViewModel selectedItem);
 
-        public DelegateCommand manageCertificatesCommand { get; }
-        public DelegateCommand saveCommand { get; }
-        public DelegateCommand refreshCommand { get; }
+}
 
-        public string title { get; } = "Remote Desktop Services Certificate Selector";
+public class MainWindowViewModel: BindableBase, IMainWindowViewModel {
 
-        public ObservableCollection<CertificateViewModel> installedCertificates { get; } = new();
+    private readonly CertificateManager certificateManager;
 
-        public MainWindowViewModel(CertificateManager certificateManager) {
-            this.certificateManager = certificateManager;
+    public CertificateViewModel? activeCertificateViewModel => installedCertificates.FirstOrDefault(certificate => certificate.isActive);
 
-            manageCertificatesCommand = new DelegateCommand(manageCertificates);
-            saveCommand               = new DelegateCommand(save, isDirty);
-            refreshCommand            = new DelegateCommand(refresh);
+    public DelegateCommand manageCertificatesCommand { get; }
+    public DelegateCommand saveCommand { get; }
+    public DelegateCommand refreshCommand { get; }
 
-            refresh();
+    public string title { get; } = "Remote Desktop Services Certificate Selector";
+
+    public ObservableCollection<CertificateViewModel> installedCertificates { get; } = new();
+
+    public MainWindowViewModel(CertificateManager certificateManager) {
+        this.certificateManager = certificateManager;
+
+        manageCertificatesCommand = new DelegateCommand(manageCertificates);
+        saveCommand               = new DelegateCommand(save, isDirty);
+        refreshCommand            = new DelegateCommand(refresh);
+
+        refresh();
+    }
+
+    public void setActive(CertificateViewModel selectedItem) {
+        CertificateViewModel? oldActiveCertificate = activeCertificateViewModel;
+        if (oldActiveCertificate is not null) {
+            oldActiveCertificate.isActive = false;
         }
 
-        public void setActive(CertificateViewModel selectedItem) {
-            CertificateViewModel? oldActiveCertificate = activeCertificateViewModel;
-            if (oldActiveCertificate is not null) {
-                oldActiveCertificate.isActive = false;
+        selectedItem.isActive = true;
+    }
+
+    private void manageCertificates() {
+        certificateManager.launchCertificateManagementConsole();
+    }
+
+    private void save() {
+        if (activeCertificateViewModel?.certificate is { } selectedCertificate) {
+            try {
+                certificateManager.activeTerminalServicesCertificate = selectedCertificate;
+                saveCommand.RaiseCanExecuteChanged();
+                MessageBox.Show($"Remote Desktop Services are now using the \"{selectedCertificate.name}\" certificate, which expires on {selectedCertificate.expirationDate:d}.",
+                    "Connection updated", MessageBoxButton.OK, MessageBoxImage.Information);
+            } catch (CimException e) {
+                MessageBox.Show(e.Message, "Failed to change certificate", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        } else {
+            MessageBox.Show("No certificate selected", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
 
-            selectedItem.isActive = true;
+    private bool isDirty() {
+        return !certificateManager.activeTerminalServicesCertificate.Equals(activeCertificateViewModel?.certificate);
+    }
+
+    private void refresh() {
+        Certificate activeCertificate = certificateManager.activeTerminalServicesCertificate;
+
+        foreach (CertificateViewModel installedCertificate in installedCertificates) {
+            installedCertificate.PropertyChanged -= onCertificateViewModelChanged;
         }
 
-        private void manageCertificates() {
-            certificateManager.launchCertificateManagementConsole();
-        }
+        installedCertificates.Clear();
+        installedCertificates.AddRange(certificateManager.installedCertificates
+            .Select(certificate => {
+                CertificateViewModel certificateViewModel = new(certificate, certificateManager) { isActive = certificate == activeCertificate };
+                certificateViewModel.PropertyChanged += onCertificateViewModelChanged;
+                return certificateViewModel;
+            }));
+        installedCertificates.Add(new CertificateViewModel(new Certificate("abc", "Fake", "Issuer", DateTime.Now.AddDays(-1), false), certificateManager)); //TODO testing styles
 
-        private void save() {
-            if (activeCertificateViewModel?.certificate is { } selectedCertificate) {
-                try {
-                    certificateManager.activeTerminalServicesCertificate = selectedCertificate;
-                    saveCommand.RaiseCanExecuteChanged();
-                    MessageBox.Show($"Remote Desktop Services are now using the \"{selectedCertificate.name}\" certificate, which expires on {selectedCertificate.expirationDate:d}.",
-                        "Connection updated", MessageBoxButton.OK, MessageBoxImage.Information);
-                } catch (CimException e) {
-                    MessageBox.Show(e.Message, "Failed to change certificate", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            } else {
-                MessageBox.Show("No certificate selected", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
+        saveCommand.RaiseCanExecuteChanged();
+    }
 
-        private bool isDirty() {
-            return !certificateManager.activeTerminalServicesCertificate.Equals(activeCertificateViewModel?.certificate);
-        }
-
-        private void refresh() {
-            Certificate activeCertificate = certificateManager.activeTerminalServicesCertificate;
-
-            foreach (CertificateViewModel installedCertificate in installedCertificates) {
-                installedCertificate.PropertyChanged -= onCertificateViewModelChanged;
-            }
-
-            installedCertificates.Clear();
-            installedCertificates.AddRange(certificateManager.installedCertificates
-                .Select(certificate => {
-                    var certificateViewModel = new CertificateViewModel(certificate, certificateManager) { isActive = certificate == activeCertificate };
-                    certificateViewModel.PropertyChanged += onCertificateViewModelChanged;
-                    return certificateViewModel;
-                }));
-
+    private void onCertificateViewModelChanged(object sender, PropertyChangedEventArgs args) {
+        if (args.PropertyName == nameof(CertificateViewModel.isActive)) {
             saveCommand.RaiseCanExecuteChanged();
         }
-
-        private void onCertificateViewModelChanged(object sender, PropertyChangedEventArgs args) {
-            if (args.PropertyName == nameof(CertificateViewModel.isActive)) {
-                saveCommand.RaiseCanExecuteChanged();
-            }
-        }
-
     }
 
 }

@@ -7,15 +7,18 @@
         xmlns:componentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:viewModels="clr-namespace:RemoteDesktopServicesCertificateSelector.ViewModels"
         xmlns:views="clr-namespace:RemoteDesktopServicesCertificateSelector.Views"
+        xmlns:samples="clr-namespace:RemoteDesktopServicesCertificateSelector.ViewModels.Samples"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
+        d:DataContext="{d:DesignInstance samples:SampleMainWindowViewModel, IsDesignTimeCreatable=true}"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="{Binding title}"
         Height="228"
         Width="790"
         WindowStartupLocation="CenterScreen"
         TextOptions.TextFormattingMode="Display"
-        TextOptions.TextHintingMode="Fixed" Loaded="onWindowLoaded">
+        TextOptions.TextHintingMode="Fixed"
+        Loaded="onWindowLoaded"
+        Style="{DynamicResource windowStyle}">
 
     <Window.Resources>
         <!-- Default sorting of grid data -->
@@ -24,18 +27,25 @@
                 <componentModel:SortDescription PropertyName="name" Direction="Ascending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
+
+        <Style TargetType="DataGridColumnHeadersPresenter">
+            <Setter Property="Margin" Value="0 0 0 5" />
+        </Style>
     </Window.Resources>
 
     <Grid>
         <!-- SelectedItem doesn't work properly on Window load, you either have to set it manually or not use the DataGrid's DataContext directly -->
-        <DataGrid Name="dataGrid" Margin="10,10,10,41"
+        <DataGrid Name="dataGrid"
+                  Margin="10,10,10,41"
                   AutoGenerateColumns="False" KeyUp="onDataGridKeyUp"
                   ItemsSource="{Binding Source={StaticResource installedCertificatesSorted}}"
                   CanUserAddRows="False" CanUserDeleteRows="False"
                   CanUserResizeRows="False" HeadersVisibility="Column" GridLinesVisibility="None"
-                  Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" SelectionUnit="FullRow"
-                  BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-                  SelectedItem="{Binding DataContext.activeCertificateViewModel, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=FrameworkElement}, Mode=OneTime}">
+                  Background="Transparent" SelectionUnit="FullRow"
+                  SelectedItem="{Binding DataContext.activeCertificateViewModel, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=FrameworkElement}, Mode=OneTime}"
+                  Style="{StaticResource dataGridStyle}"
+                  ColumnHeaderStyle="{DynamicResource columnHeaderStyle}"
+                  CellStyle="{DynamicResource cellStyle}">
 
             <DataGrid.Resources>
                 <!-- Copy command on row model: https://blog.gisspan.com/2012/11/contextmenu-for-wpf-datagrid-on-row.html -->
@@ -58,63 +68,41 @@
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
                     <Setter Property="ContextMenu" Value="{StaticResource rowMenu}" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="{DynamicResource textBrush}" />
                 </Style>
             </DataGrid.RowStyle>
 
             <DataGrid.Columns>
-                <DataGridTemplateColumn Width="22" CanUserResize="False">
+                <DataGridTemplateColumn Width="22" CanUserResize="False" HeaderStyle="{DynamicResource invisibleColumnHeaderStyle}">
+                    <DataGridTemplateColumn.CellStyle>
+                        <Style TargetType="DataGridCell" BasedOn="{StaticResource cellStyle}">
+                            <Setter Property="Padding" Value="0 4" />
+                        </Style>
+                    </DataGridTemplateColumn.CellStyle>
                     <DataGridTemplateColumn.CellTemplate>
                         <!-- DataType must be set or else the binding will have a DataContext of the grid's view model, not the row's -->
                         <DataTemplate DataType="viewModels:CertificateViewModel">
-                            <RadioButton GroupName="selectedCertificate" IsThreeState="True" IsChecked="{Binding isActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Right" Focusable="False" />
+                            <RadioButton GroupName="selectedCertificate" IsThreeState="True" IsChecked="{Binding isActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         HorizontalAlignment="Right" Focusable="False" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <!-- Default header sorting state -->
                 <DataGridTextColumn Binding="{Binding name, Mode=OneWay}" Header="Certificate name" Width="*" SortDirection="Ascending" />
                 <DataGridTextColumn Binding="{Binding issuerName, Mode=OneWay}" Header="Issuer" Width="*" IsReadOnly="True" />
-                <DataGridTextColumn Binding="{Binding expirationDate, Mode=OneWay}" Header="Expiration date" IsReadOnly="True">
-                    <!-- Expired certificate date is red -->
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Style.Triggers>
-                                <!-- Mode must be OneTime or else you get Key Cannot Be Null crashes -->
-                                <DataTrigger Binding="{Binding Item.(viewModels:CertificateViewModel.isExpired), RelativeSource={RelativeSource AncestorType=DataGridRow}, Mode=OneTime}" Value="true">
-                                    <Setter Property="Foreground" Value="Crimson" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding expirationDate, Mode=OneWay}" Header="Expiration date" IsReadOnly="True" ElementStyle="{DynamicResource expirationDateStyle}" />
                 <DataGridTextColumn Binding="{Binding thumbprint, Mode=OneWay}" Header="Thumbprint (SHA-1)" IsReadOnly="True" />
             </DataGrid.Columns>
-
-            <DataGrid.CellStyle>
-                <!-- Get rid of black outline on clicked cell -->
-                <Style TargetType="DataGridCell">
-                    <Setter Property="BorderThickness" Value="0" />
-                    <Setter Property="Padding" Value="3" />
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="DataGridCell">
-                                <Border Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
-                                        Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                                </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </DataGrid.CellStyle>
         </DataGrid>
 
         <DockPanel Margin="10,0,10,10" Height="24" VerticalAlignment="Bottom">
             <views:IconButton Command="{Binding refreshCommand}" Text="Refresh" Icon="../Resources/refresh.png" DockPanel.Dock="Left" HorizontalAlignment="Left" Margin="0,0,7,0" />
 
             <views:IconButton Command="{Binding manageCertificatesCommand}" Text="Manage Local Computer Certificates" Icon="../Resources/certs.ico" DockPanel.Dock="Left" HorizontalAlignment="Left" />
-            
+
             <views:IconButton Command="{Binding saveCommand}" Text="Apply" Icon="../Resources/save.ico" DockPanel.Dock="Right" HorizontalAlignment="Right" />
         </DockPanel>
-        
+
     </Grid>
 </Window>

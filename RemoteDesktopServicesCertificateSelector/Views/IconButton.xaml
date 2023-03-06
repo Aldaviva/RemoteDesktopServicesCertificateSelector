@@ -11,7 +11,7 @@
         <converters:EnabledToOpacityConverter x:Key="enabledToOpacityConverter" />
     </UserControl.Resources>
 
-    <Button Height="24" HorizontalContentAlignment="Left" Padding="5,1,6,1" Command="{Binding ElementName=root, Path=Command}" Click="onButtonClick">
+    <Button Command="{Binding ElementName=root, Path=Command}" Click="onButtonClick" Style="{StaticResource iconButtonStyle}">
         <StackPanel Orientation="Horizontal">
             <!-- Could make the icon grayscale on disabled using https://www.renebergelt.de/blog/2019/10/automatically-grayscale-images-on-disabled-wpf-buttons/ -->
             <Image Height="16" Margin="0,0,6,0" Source="{Binding ElementName=root, Path=Icon}" Opacity="{Binding RelativeSource={RelativeSource AncestorType=Button, Mode=FindAncestor}, Path=IsEnabled, Converter={StaticResource enabledToOpacityConverter}}" />
