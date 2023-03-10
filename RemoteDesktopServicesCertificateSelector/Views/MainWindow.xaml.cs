@@ -1,11 +1,12 @@
 ﻿#nullable enable
 
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using Dark.Net;
 using RemoteDesktopServicesCertificateSelector.ViewModels;
 
-namespace RemoteDesktopServicesCertificateSelector.Views; 
+namespace RemoteDesktopServicesCertificateSelector.Views;
 
 public partial class MainWindow {
 
@@ -18,7 +19,10 @@ public partial class MainWindow {
 
     private void onWindowLoaded(object sender, RoutedEventArgs e) {
         dataGrid.Focus();
-        dataGrid.CurrentCell = dataGrid.SelectedCells[0];
+
+        if (dataGrid.SelectedCells.Any()) {
+            dataGrid.CurrentCell = dataGrid.SelectedCells[0];
+        }
     }
 
     private void onDataGridKeyUp(object _, KeyEventArgs args) {
