@@ -2,6 +2,12 @@
   "version": 1,
   "dependencies": {
     ".NETFramework,Version=v4.8": {
+      "DarkNet": {
+        "type": "Direct",
+        "requested": "[2.2.0-SNAPSHOT2, )",
+        "resolved": "2.2.0-SNAPSHOT2",
+        "contentHash": "6KcMuvhw6cigHJRUqfcIVSRRcabYzIiRbk3LK9XqkGsExKJK9HZ4ZM+zHyLANFo2tNb7kE2s2/hS0iWSe4rrcQ=="
+      },
       "ILRepack.Lib.MSBuild.Task": {
         "type": "Direct",
         "requested": "[2.0.18.2, )",

@@ -34,12 +34,14 @@ public class SampleMainWindowViewModel: IMainWindowViewModel {
 
     public void setActive(CertificateViewModel selectedItem) { }
 
+#pragma warning disable CS0067 // it's just a sample class for XAML authoring
     public event PropertyChangedEventHandler? PropertyChanged;
+#pragma warning restore CS0067
 
     private class FakeCertificateManager: CertificateManager {
 
-        public IEnumerable<Certificate> installedCertificates { get; }
-        public Certificate activeTerminalServicesCertificate { get; set; }
+        public IEnumerable<Certificate> installedCertificates { get; } = Array.Empty<Certificate>();
+        public Certificate activeTerminalServicesCertificate { get; set; } = new("fake");
 
         public Task launchCertificateManagementConsole() {
             return Task.CompletedTask;
