@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:converters="clr-namespace:RemoteDesktopServicesCertificateSelector.Views.Converters"
+             xmlns:views="clr-namespace:RemoteDesktopServicesCertificateSelector.Views"
              mc:Ignorable="d" 
              x:Name="root" 
              d:DesignHeight="24" d:DesignWidth="200">
@@ -11,11 +12,11 @@
         <converters:EnabledToOpacityConverter x:Key="enabledToOpacityConverter" />
     </UserControl.Resources>
 
-    <Button Command="{Binding ElementName=root, Path=Command}" Click="onButtonClick" Style="{StaticResource iconButtonStyle}">
+    <Button Command="{Binding ElementName=root, Path=Command}" Click="onButtonClick" Style="{DynamicResource iconButtonStyle}">
         <StackPanel Orientation="Horizontal">
-            <!-- Could make the icon grayscale on disabled using https://www.renebergelt.de/blog/2019/10/automatically-grayscale-images-on-disabled-wpf-buttons/ -->
-            <Image Height="16" Margin="0,0,6,0" Source="{Binding ElementName=root, Path=Icon}" Opacity="{Binding RelativeSource={RelativeSource AncestorType=Button, Mode=FindAncestor}, Path=IsEnabled, Converter={StaticResource enabledToOpacityConverter}}" />
-            <TextBlock Text="{Binding ElementName=root, Path=Text}" />
+            <views:AutoDisableImage Height="16" Margin="0,0,6,0" Source="{Binding ElementName=root, Path=Icon}"
+                   Opacity="{Binding RelativeSource={RelativeSource AncestorType=Button, Mode=FindAncestor}, Path=IsEnabled, Converter={StaticResource enabledToOpacityConverter}}" />
+            <TextBlock Text="{Binding ElementName=root, Path=Text}"  />
         </StackPanel>
     </Button>
 </UserControl>

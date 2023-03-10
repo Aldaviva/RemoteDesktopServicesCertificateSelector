@@ -6,7 +6,9 @@
     <prism:PrismApplication.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Views/Skins/Skin.Dark.xaml"></ResourceDictionary> <!-- TODO: remove this -->
+                <!-- Skins will get automatically replaced with Light Mode by SkinManager based on user default app mode -->
+                <ResourceDictionary Source="Views/Skins/Skin.Dark.xaml" />
+                <!-- <ResourceDictionary Source="Views/Skins/Skin.Light.xaml" /> -->
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </prism:PrismApplication.Resources>

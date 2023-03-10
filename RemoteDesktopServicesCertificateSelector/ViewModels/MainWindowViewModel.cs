@@ -1,6 +1,5 @@
 ﻿#nullable enable
 
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -96,7 +95,6 @@ public class MainWindowViewModel: BindableBase, IMainWindowViewModel {
                 certificateViewModel.PropertyChanged += onCertificateViewModelChanged;
                 return certificateViewModel;
             }));
-        installedCertificates.Add(new CertificateViewModel(new Certificate("abc", "Fake", "Issuer", DateTime.Now.AddDays(-1), false), certificateManager)); //TODO testing styles
 
         saveCommand.RaiseCanExecuteChanged();
     }

@@ -9,25 +9,25 @@ using Prism.DryIoc;
 using Prism.Ioc;
 using RemoteDesktopServicesCertificateSelector.Managers;
 using RemoteDesktopServicesCertificateSelector.Views;
+using RemoteDesktopServicesCertificateSelector.Views.Skins;
 
 namespace RemoteDesktopServicesCertificateSelector;
 
 public partial class App {
 
     protected override void OnStartup(StartupEventArgs e) {
-        base.OnStartup(e);
-
         DarkNet.Instance.SetCurrentProcessTheme(Theme.Auto);
 
         // Disable Aero for Windows 8 and later, so the newer, nicer Metro-looking WPF theme (Aero2) is used
         if (Environment.OSVersion.Version < new Version(6, 2)) {
-            Current.Resources.MergedDictionaries.Add(getResourceDictionary("PresentationFramework.Aero", "themes/Aero.NormalColor.xaml"));
+            Current.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = getResourceUri("PresentationFramework.Aero", "themes/Aero.NormalColor.xaml") });
         }
 
-        // TODO uncomment this
-        // SkinManager.register(
-        //     getResourceDictionary("RemoteDesktopServicesCertificateSelector", "Views/Skins/Skin.Light.xaml"),
-        //     getResourceDictionary("RemoteDesktopServicesCertificateSelector", "Views/Skins/Skin.Dark.xaml"));
+        SkinManager.register(
+            getResourceUri("RemoteDesktopServicesCertificateSelector", "Views/Skins/Skin.Light.xaml"),
+            getResourceUri("RemoteDesktopServicesCertificateSelector", "Views/Skins/Skin.Dark.xaml"));
+
+        base.OnStartup(e);
     }
 
     protected override Window CreateShell() => Container.Resolve<MainWindow>();
@@ -41,19 +41,21 @@ public partial class App {
         base.OnExit(e);
     }
 
-    private static ResourceDictionary getResourceDictionary(string unpackedAssemblyName, string resourceDictionaryXamlPath) {
+    private static Uri getResourceUri(string unpackedAssemblyName, string resourceDictionaryXamlPath) {
         resourceDictionaryXamlPath = Uri.EscapeUriString(resourceDictionaryXamlPath.TrimStart('/'));
         unpackedAssemblyName       = Uri.EscapeUriString(unpackedAssemblyName);
         string executingAssembly = Uri.EscapeUriString(Assembly.GetExecutingAssembly().GetName().Name);
 
-        ResourceDictionary resourceDictionary = new();
+        Uri uri;
         try {
-            resourceDictionary.Source = new Uri($"pack://application:,,,/{executingAssembly};component/{unpackedAssemblyName}/{resourceDictionaryXamlPath}", UriKind.Absolute);
+            uri = new Uri($"pack://application:,,,/{executingAssembly};component/{unpackedAssemblyName}/{resourceDictionaryXamlPath}", UriKind.Absolute);
+            GetResourceStream(uri)?.Stream.Dispose();
+            return uri;
         } catch (IOException) {
-            resourceDictionary.Source = new Uri($"pack://application:,,,/{unpackedAssemblyName};component/{resourceDictionaryXamlPath}", UriKind.Absolute);
+            uri = new Uri($"pack://application:,,,/{unpackedAssemblyName};component/{resourceDictionaryXamlPath}", UriKind.Absolute);
+            GetResourceStream(uri)?.Stream.Dispose();
+            return uri;
         }
-
-        return resourceDictionary;
     }
 
     /*protected override void OnStartup(StartupEventArgs e) {

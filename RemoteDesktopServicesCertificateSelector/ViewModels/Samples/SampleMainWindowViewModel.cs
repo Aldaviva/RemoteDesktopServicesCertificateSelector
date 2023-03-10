@@ -42,12 +42,10 @@ public class SampleMainWindowViewModel: IMainWindowViewModel {
         public Certificate activeTerminalServicesCertificate { get; set; }
 
         public Task launchCertificateManagementConsole() {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
-        public void openCertificate(Certificate certificate) {
-            throw new NotImplementedException();
-        }
+        public void openCertificate(Certificate certificate) { }
 
     }
 

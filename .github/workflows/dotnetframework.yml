@@ -1,0 +1,30 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v1.3.1
+
+      - name: Clone
+        uses: actions/checkout@v3.3.0
+
+      - name: Restore
+        run: msbuild -t:restore -p:RestoreLockedMode=true -m
+
+      - name: Build
+        run: msbuild -p:Configuration=Release -t:build -m
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: RemoteDesktopServicesCertificateSelector
+          path: RemoteDesktopServicesCertificateSelector\bin\Release\RemoteDesktopServicesCertificateSelector.exe
+          if-no-files-found: error
+          

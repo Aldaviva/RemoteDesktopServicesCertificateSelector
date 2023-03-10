@@ -6,7 +6,7 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 
-namespace RemoteDesktopServicesCertificateSelector.Views; 
+namespace RemoteDesktopServicesCertificateSelector.Views;
 
 [ContentProperty(nameof(Text))]
 [SuppressMessage("ReSharper", "InconsistentNaming")]

@@ -3,7 +3,12 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:viewModels="clr-namespace:RemoteDesktopServicesCertificateSelector.ViewModels">
 
-    <Thickness x:Key="cellPadding" Left="6" Top="4" Right="6" Bottom="4"></Thickness>
+    <Thickness x:Key="cellPadding" Left="6" Top="4" Right="6" Bottom="4" />
+
+    <SolidColorBrush x:Key="windowBackgroundBrush" Color="White" />
+    <Style TargetType="Window" x:Key="windowStyle">
+        <Setter Property="Background" Value="{StaticResource windowBackgroundBrush}" />
+    </Style>
 
     <Style TargetType="DataGridCell" x:Key="cellStyle">
         <Setter Property="BorderThickness" Value="0" />
@@ -37,6 +42,12 @@
                 <Setter Property="Foreground" Value="{DynamicResource invalidBrush}" />
             </DataTrigger>
         </Style.Triggers>
+    </Style>
+
+    <Style x:Key="iconButtonStyleCommon" TargetType="Button">
+        <Setter Property="Padding" Value="5,1,6,1" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Height" Value="24" />
     </Style>
 
 </ResourceDictionary>

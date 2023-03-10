@@ -25,12 +25,9 @@
         <CollectionViewSource x:Key="installedCertificatesSorted" Source="{Binding installedCertificates}">
             <CollectionViewSource.SortDescriptions>
                 <componentModel:SortDescription PropertyName="name" Direction="Ascending" />
+                <componentModel:SortDescription PropertyName="expirationDate" Direction="Ascending" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
-
-        <Style TargetType="DataGridColumnHeadersPresenter">
-            <Setter Property="Margin" Value="0 0 0 5" />
-        </Style>
     </Window.Resources>
 
     <Grid>
@@ -43,7 +40,6 @@
                   CanUserResizeRows="False" HeadersVisibility="Column" GridLinesVisibility="None"
                   Background="Transparent" SelectionUnit="FullRow"
                   SelectedItem="{Binding DataContext.activeCertificateViewModel, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=FrameworkElement}, Mode=OneTime}"
-                  Style="{StaticResource dataGridStyle}"
                   ColumnHeaderStyle="{DynamicResource columnHeaderStyle}"
                   CellStyle="{DynamicResource cellStyle}">
 
@@ -74,7 +70,14 @@
             </DataGrid.RowStyle>
 
             <DataGrid.Columns>
-                <DataGridTemplateColumn Width="22" CanUserResize="False" HeaderStyle="{DynamicResource invisibleColumnHeaderStyle}">
+                <DataGridTemplateColumn Width="22" CanUserResize="False">
+                    <DataGridTemplateColumn.HeaderStyle>
+                        <!-- If you extract this header style to a resource, it won't re-render when the resource dictionaries change between light and dark modes -->
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="BorderThickness" Value="{DynamicResource invisibleHeaderBorderThickness}" />
+                            <Setter Property="Background" Value="{DynamicResource invisibleHeaderBackgroundBrush}" />
+                        </Style>
+                    </DataGridTemplateColumn.HeaderStyle>
                     <DataGridTemplateColumn.CellStyle>
                         <Style TargetType="DataGridCell" BasedOn="{StaticResource cellStyle}">
                             <Setter Property="Padding" Value="0 4" />
