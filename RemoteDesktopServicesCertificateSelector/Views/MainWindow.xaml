@@ -71,13 +71,6 @@
 
             <DataGrid.Columns>
                 <DataGridTemplateColumn Width="22" CanUserResize="False">
-                    <DataGridTemplateColumn.HeaderStyle>
-                        <!-- If you extract this header style to a resource, it won't re-render when the resource dictionaries change between light and dark modes -->
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="BorderThickness" Value="{DynamicResource invisibleHeaderBorderThickness}" />
-                            <Setter Property="Background" Value="{DynamicResource invisibleHeaderBackgroundBrush}" />
-                        </Style>
-                    </DataGridTemplateColumn.HeaderStyle>
                     <DataGridTemplateColumn.CellStyle>
                         <Style TargetType="DataGridCell" BasedOn="{StaticResource cellStyle}">
                             <Setter Property="Padding" Value="0 4" />

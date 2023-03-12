@@ -2,8 +2,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
-                    xmlns:converters="clr-namespace:RemoteDesktopServicesCertificateSelector.Views.Converters"
-                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+                    xmlns:converters="clr-namespace:RemoteDesktopServicesCertificateSelector.Views.Converters">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="Skin.Common.xaml" />
@@ -16,6 +15,7 @@
 
     <converters:ColumnSortDirectionToVisibilityConverter x:Key="columnSortDirectionToVisibilityConverter" />
     <converters:ColumnSortDirectionToRotationConverter x:Key="columnSortDirectionToRotationConverter" />
+    <converters:ColumnHeaderBorderThicknessConverter x:Key="columnHeaderBorderThicknessConverter" />
 
     <Style TargetType="Window" x:Key="windowStyle">
         <Setter Property="Background" Value="{StaticResource windowBackgroundBrush}" />
@@ -79,7 +79,7 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Foreground" Value="#dedede" />
         <Setter Property="Background" Value="{DynamicResource windowBackgroundBrush}" />
-        <Setter Property="BorderThickness" Value="1 0 0 0" />
+        <Setter Property="BorderThickness" Value="{Binding DisplayIndex, RelativeSource={RelativeSource Self}, Converter={StaticResource columnHeaderBorderThicknessConverter}}" />
         <Setter Property="BorderBrush" Value="#636363" />
         <Setter Property="Padding" Value="6 6 6 4" />
         <Setter Property="Template">

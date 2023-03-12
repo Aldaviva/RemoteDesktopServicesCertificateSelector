@@ -74,6 +74,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Views\Converters\ColumnHeaderBorderThicknessConverter.cs" />
     <Compile Include="ViewModels\Samples\SampleMainWindowViewModel.cs" />
     <Compile Include="Views\Converters\ColumnSortDirectionToRotationConverter.cs" />
     <Compile Include="Views\Converters\ColumnSortDirectionToVisibilityConverter.cs" />

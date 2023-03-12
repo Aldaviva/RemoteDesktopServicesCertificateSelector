@@ -13,7 +13,7 @@
 
     <Style x:Key="columnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}" />
 
-    <Thickness x:Key="invisibleHeaderBorderThickness" Top="{x:Null}" Bottom="{x:Null}" Left="{x:Null}" Right="{x:Null}" />
+    <Thickness x:Key="invisibleHeaderBorderThickness" Top="0" Bottom="0" Left="0" Right="0" />
     <x:Null x:Key="invisibleHeaderBackgroundBrush" />
 
 </ResourceDictionary>
