@@ -12,6 +12,7 @@
     <SolidColorBrush x:Key="invalidBrush" Color="#cb3d37" />
     <SolidColorBrush x:Key="dataGridCellSelectedBackground" Color="#11FFFFFF" />
     <SolidColorBrush x:Key="windowBackgroundBrush" Color="#202020" />
+    <Thickness x:Key="dataGridHeaderBottomMargin">0 0 0 5</Thickness>
 
     <converters:ColumnSortDirectionToVisibilityConverter x:Key="columnSortDirectionToVisibilityConverter" />
     <converters:ColumnSortDirectionToRotationConverter x:Key="columnSortDirectionToRotationConverter" />

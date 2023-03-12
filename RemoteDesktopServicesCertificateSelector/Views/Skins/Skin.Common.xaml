@@ -4,6 +4,7 @@
                     xmlns:viewModels="clr-namespace:RemoteDesktopServicesCertificateSelector.ViewModels">
 
     <Thickness x:Key="cellPadding" Left="6" Top="4" Right="6" Bottom="4" />
+    <Thickness x:Key="dataGridHeaderBottomMargin">0 0 0 0</Thickness>
 
     <SolidColorBrush x:Key="windowBackgroundBrush" Color="White" />
     <Style TargetType="Window" x:Key="windowStyle">
@@ -48,6 +49,10 @@
         <Setter Property="Padding" Value="5,1,6,1" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="Height" Value="24" />
+    </Style>
+
+    <Style TargetType="DataGridColumnHeadersPresenter">
+        <Setter Property="Margin" Value="{DynamicResource dataGridHeaderBottomMargin}" />
     </Style>
 
 </ResourceDictionary>
