@@ -4,9 +4,9 @@
     ".NETFramework,Version=v4.8": {
       "DarkNet": {
         "type": "Direct",
-        "requested": "[2.2.0-SNAPSHOT2, )",
-        "resolved": "2.2.0-SNAPSHOT2",
-        "contentHash": "6KcMuvhw6cigHJRUqfcIVSRRcabYzIiRbk3LK9XqkGsExKJK9HZ4ZM+zHyLANFo2tNb7kE2s2/hS0iWSe4rrcQ=="
+        "requested": "[2.2.0, )",
+        "resolved": "2.2.0",
+        "contentHash": "OvqHbAkECmW9xPg1nWVG8l1LiX9B5FO6SikunLzwPaDMxjEPThxR8Ly0A4p6hgAfTsY5Nm3dUhAOxSLN6KnLjA=="
       },
       "ILRepack.Lib.MSBuild.Task": {
         "type": "Direct",

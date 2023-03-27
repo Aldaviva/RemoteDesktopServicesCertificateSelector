@@ -5,11 +5,11 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using Dark.Net;
+using Dark.Net.Wpf;
 using Prism.DryIoc;
 using Prism.Ioc;
 using RemoteDesktopServicesCertificateSelector.Managers;
 using RemoteDesktopServicesCertificateSelector.Views;
-using RemoteDesktopServicesCertificateSelector.Views.Skins;
 
 namespace RemoteDesktopServicesCertificateSelector;
 
@@ -23,7 +23,7 @@ public partial class App {
             Current.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = getResourceUri("PresentationFramework.Aero", "themes/Aero.NormalColor.xaml") });
         }
 
-        SkinManager.register(
+        new SkinManager().RegisterSkins(
             getResourceUri("RemoteDesktopServicesCertificateSelector", "Views/Skins/Skin.Light.xaml"),
             getResourceUri("RemoteDesktopServicesCertificateSelector", "Views/Skins/Skin.Dark.xaml"));
 
@@ -41,6 +41,7 @@ public partial class App {
         base.OnExit(e);
     }
 
+    /// <exception cref="IOException">if the resource dictionary XAML file can't be found in the executing assembly</exception>
     private static Uri getResourceUri(string unpackedAssemblyName, string resourceDictionaryXamlPath) {
         resourceDictionaryXamlPath = Uri.EscapeUriString(resourceDictionaryXamlPath.TrimStart('/'));
         unpackedAssemblyName       = Uri.EscapeUriString(unpackedAssemblyName);
