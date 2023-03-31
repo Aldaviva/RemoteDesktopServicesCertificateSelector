@@ -33,7 +33,7 @@ Thanks to [major web browser vendors needlessly bullying certificate authorities
 It's a portable application. You can save it, run it, and then delete it when you're done. It won't leave any files or registry values behind.
 
 ## Certificate Conversion
-Both your public certificate and private key are required for servers like Remote Desktop Services. These must be imported into a Windows certificate store using [PCKS #12](https://wikipedia.org/wiki/PKCS_12) format, which uses the P12 and PFX file extensions. If you don't convert to PKCS #12, the private key can't be imported, and you won't be able to encrypt traffic on your server.
+Both your public certificate and private key are required for servers like Remote Desktop Services. These must be imported into a Windows certificate store using [PKCS #12](https://wikipedia.org/wiki/PKCS_12) format, which uses the P12 and PFX file extensions. If you don't convert to PKCS #12, the private key can't be imported, and you won't be able to encrypt traffic on your server.
 
 If you have a certificate that you want to import, like a PEM or DER encoded keypair, you will first need to temporarily convert it to PKCS #12:
 
