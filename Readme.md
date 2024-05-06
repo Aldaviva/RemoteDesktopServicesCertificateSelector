@@ -5,9 +5,9 @@
 
 This GUI program lets you choose the certificate to encrypt your Remote Desktop Services connections.
 
-In Windows Server 2008 R2 and earlier, this functionality was available in the Remote Desktop Session Host Configuration (`tsconfig.msc`), but Microsoft removed it from Windows Server 2012 and later, which means you can only [configure it programmatically using WMI](https://serverfault.com/a/444287/227008).
+In Windows Server 2008 R2 and earlier, this functionality was available in the Remote Desktop Session Host Configuration (`tsconfig.msc`). However, Microsoft removed this file from Windows Server 2012 and later, which means you can only [configure it programmatically using WMI](https://serverfault.com/a/444287/227008).
 
-Thanks to [major web browser vendors needlessly bullying certificate authorities into restricting the maximum validity duration of a certificate to roughly 1 year](https://www.ssls.com/blog/apples-new-ssl-lifetime-limitation-and-what-it-means-for-you/), I now have to deal with this problem far more often than if I could just buy a 5-year cert, install it once, and then not think about it for a long time. This change makes no sense: my owner checks are simply using domain validation, which is just a simple proof of DNS control and does not guarantee much of anything; key rotation is not more frequent because you are not required to generate a new private key or CSR, just a public cert; and all of the improvements over time in public key cryptography come from the protocols which use the certificates, not the certs themselves, such as Apache httpd and Nginx implementing HTTP/2 and TLSv1.3.
+Thanks to [major web browser vendors needlessly bullying certificate authorities into restricting the maximum validity duration of a certificate to roughly 1 year](https://www.ssls.com/blog/apples-new-ssl-lifetime-limitation-and-what-it-means-for-you/), I now have to deal with this problem far more often than if I could just buy a 5-year cert, install it once, and then not think about it for a long time. This change makes no sense: my owner checks are simply using domain validation, which is just a simple proof of DNS control and does not guarantee much of anything; key rotation is not more frequent because you are not required to generate a new private key or CSR, just a public cert; and all of the improvements over time in public key cryptography come from the protocols which use the certificates, not the certs themselves, such as Apache httpd and Nginx implementing HTTP/2, TLSv1.3, and improved cipher suites.
 
 ![screenshot](.github/images/screenshot-dark.png)
 
@@ -23,8 +23,10 @@ Thanks to [major web browser vendors needlessly bullying certificate authorities
 
 ## Requirements
 
-- Windows (tested on Server 2019)
-- [.NET Framework 4.8](https://dotnet.microsoft.com/download/dotnet-framework) or later
+- Windows
+    - Tested on Server 2019
+    - Should work on any other versions too
+- [.NET Framework 4.8](https://dotnet.microsoft.com/download/dotnet-framework)
 
 ## Installation
 
@@ -35,7 +37,7 @@ It's a portable application. You can save it, run it, and then delete it when yo
 ## Certificate Conversion
 Both your public certificate and private key are required for servers like Remote Desktop Services. These must be imported into a Windows certificate store using [PKCS #12](https://wikipedia.org/wiki/PKCS_12) format, which uses the P12 and PFX file extensions. If you don't convert to PKCS #12, the private key can't be imported, and you won't be able to encrypt traffic on your server.
 
-If you have a certificate that you want to import, like a PEM or DER encoded keypair, you will first need to temporarily convert it to PKCS #12:
+If you have a certificate that you want to import, like a pair of PEM or DER files, you will first need to temporarily convert it to PKCS #12 using [OpenSSL](https://slproweb.com/products/Win32OpenSSL.html).
 
 ```sh
 openssl pkcs12 -in "mypubliccert.pem.crt" -inkey "myprivatekey.pem.key" -out "mycertandkey.pfx" -export

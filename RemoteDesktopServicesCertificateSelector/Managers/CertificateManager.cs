@@ -1,18 +1,21 @@
 ﻿#nullable enable
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 using Microsoft.Management.Infrastructure;
 using RemoteDesktopServicesCertificateSelector.Data;
 using RemoteDesktopServicesCertificateSelector.Properties;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Security.AccessControl;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
+using System.Threading.Tasks;
 
-namespace RemoteDesktopServicesCertificateSelector.Managers; 
+namespace RemoteDesktopServicesCertificateSelector.Managers;
 
 public interface CertificateManager {
 
@@ -77,18 +80,36 @@ public class CertificateManagerImpl: CertificateManager, IDisposable {
     }
 
     public async Task launchCertificateManagementConsole() {
-        if (mostRecentMscFilename != null) {
-            File.Delete(mostRecentMscFilename);
+        try {
+            // certlm.msc opens local computer certificates, but only exists in Windows 8, Server 2012, or newer
+            Process.Start(Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\certlm.msc"))?.Dispose();
+        } catch (Win32Exception) {
+            if (mostRecentMscFilename != null) {
+                File.Delete(mostRecentMscFilename);
+            }
+
+            // Make file only readable or writable by Administrators group to avoid escalation of privilege, because it will be run elevated
+            FileSecurity       adminOnly      = new();
+            SecurityIdentifier administrators = new(WellKnownSidType.BuiltinAdministratorsSid, null);
+            adminOnly.SetAccessRuleProtection(true, false); // disable inheritance and remove inherited rules
+            adminOnly.SetOwner(administrators);
+            adminOnly.SetGroup(administrators);
+            adminOnly.SetAccessRule(new FileSystemAccessRule(administrators, FileSystemRights.FullControl, AccessControlType.Allow));
+
+            mostRecentMscFilename = Path.GetTempFileName();
+            using (MemoryStream mscReadStream = new(Resources.CertificatesMsc, false))
+            using (FileStream mscWriteStream = File.Create(mostRecentMscFilename)) {
+                new FileInfo(mostRecentMscFilename).SetAccessControl(adminOnly); // passing FileSecurity to File.Create() doesn't disable inheritance, so set it after creating the file
+                await mscReadStream.CopyToAsync(mscWriteStream);
+            }
+
+            Process.Start(Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\mmc.exe"), mostRecentMscFilename)?.Dispose();
+
+            Task.Delay(5000).ContinueWith(_ => {
+                File.Delete(mostRecentMscFilename);
+                mostRecentMscFilename = null;
+            });
         }
-
-        mostRecentMscFilename = Path.GetTempFileName();
-        File.WriteAllBytes(mostRecentMscFilename, Resources.CertificatesMsc);
-
-        Process.Start("mmc.exe", mostRecentMscFilename);
-
-        await Task.Delay(5000);
-        File.Delete(mostRecentMscFilename);
-        mostRecentMscFilename = null;
     }
 
     public void openCertificate(Certificate certificate) {

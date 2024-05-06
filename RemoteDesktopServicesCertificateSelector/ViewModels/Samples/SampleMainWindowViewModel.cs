@@ -1,14 +1,14 @@
 ﻿#nullable enable
 
+using Prism.Commands;
+using RemoteDesktopServicesCertificateSelector.Data;
+using RemoteDesktopServicesCertificateSelector.Managers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Prism.Commands;
-using RemoteDesktopServicesCertificateSelector.Data;
-using RemoteDesktopServicesCertificateSelector.Managers;
 
 namespace RemoteDesktopServicesCertificateSelector.ViewModels.Samples;
 
@@ -43,9 +43,7 @@ public class SampleMainWindowViewModel: IMainWindowViewModel {
         public IEnumerable<Certificate> installedCertificates { get; } = Array.Empty<Certificate>();
         public Certificate activeTerminalServicesCertificate { get; set; } = new("fake");
 
-        public Task launchCertificateManagementConsole() {
-            return Task.CompletedTask;
-        }
+        public Task launchCertificateManagementConsole() => Task.CompletedTask;
 
         public void openCertificate(Certificate certificate) { }
 

@@ -1,15 +1,15 @@
 ﻿#nullable enable
 
-using System;
-using System.IO;
-using System.Reflection;
-using System.Windows;
 using Dark.Net;
 using Dark.Net.Wpf;
 using Prism.DryIoc;
 using Prism.Ioc;
 using RemoteDesktopServicesCertificateSelector.Managers;
 using RemoteDesktopServicesCertificateSelector.Views;
+using System;
+using System.IO;
+using System.Reflection;
+using System.Windows;
 
 namespace RemoteDesktopServicesCertificateSelector;
 
@@ -18,7 +18,7 @@ public partial class App {
     protected override void OnStartup(StartupEventArgs e) {
         DarkNet.Instance.SetCurrentProcessTheme(Theme.Auto);
 
-        // Disable Aero for Windows 8 and later, so the newer, nicer Metro-looking WPF theme (Aero2) is used
+        // Don't enable Aero for Windows 8 and later, so the newer, nicer Metro-looking WPF theme (Aero2) is used
         if (Environment.OSVersion.Version < new Version(6, 2)) {
             Current.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = getResourceUri("PresentationFramework.Aero", "themes/Aero.NormalColor.xaml") });
         }
@@ -37,7 +37,7 @@ public partial class App {
     }
 
     protected override void OnExit(ExitEventArgs e) {
-        ((DryIocContainerExtension) Container).Instance.Dispose();
+        Container.GetContainer().Dispose();
         base.OnExit(e);
     }
 
