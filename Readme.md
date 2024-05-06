@@ -54,7 +54,7 @@ After importing the PFX file, you can delete it from disk.
 1. Click the radio button for the certificate you want to use on your RDP connections.
 1. Click **![save](https://raw.githubusercontent.com/Aldaviva/RemoteDesktopServicesCertificateSelector/master/RemoteDesktopServicesCertificateSelector/Resources/save.ico) Apply**.
 
-New connections to your `RDP-tcp` listener will now use the new certificate. This change takes effect immediately for all new connections; you don't need to restart any services or your computer.
+New connections to your `RDP-tcp` listener (over either TCP or UDP) will now use the new certificate. This change takes effect immediately for all new connections; you don't need to restart any services or your computer. Existing RDP sessions will continue to use the old certificate until you disconnect.
 
 You can view a certificate or copy its SHA-1 thumbprint by right-clicking on a row.
 
